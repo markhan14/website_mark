@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profil Saya</title>
+
+  <style>
+    body {
+      background-color: #f0e4e9dc;
+      color: #000000;
+      font-family: Georgia, "Times New Roman", serif;
+      text-align: center;
+      padding: 24px;
+      margin: 0;
+    }
+
+    #profil {
+      display: none;
+      padding: 24px;
+    }
+
+    #profil.terbuka {
+      display: block;
+    }
+
+    img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 5px solid #000000;
+    }
+
+    /* ===== Layar pembuka ===== */
+    #pembuka {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      background-color: #f0e4e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #pembuka.hilang {
+      display: none;
+    }
+
+    #kotakBuka {
+      width: 280px;
+      height: 200px;
+      background-color: #ffffff;
+      border: 5px solid #000000;
+      border-radius: 12px;
+      box-shadow: 8px 8px 0 #b9116d;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #000000;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    #kotakBuka:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 11px 11px 0 #b9116d;
+      background-color: #ffffff;
+    }
+
+    #kotakBuka:focus-visible {
+      outline: 4px solid #2e2f83;
+      outline-offset: 4px;
+    }
+
+    #kotakBuka small {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      font-weight: normal;
+      color: #b9116d;
+    }
+
+    /* ===== Kotak-kotak profil ===== */
+    .kotak {
+      background-color: #ffffff;
+      border: 4px solid #000000;
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+    }
+
+    .kotak .label {
+      display: block;
+      font-size: 0.85rem;
+      color: #b9116d;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .kotak .isi {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    /* Teks profil rata tengah */
+    .grid-profil .kotak {
+      text-align: center;
+    }
+
+    .grid-profil {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    /* ===== Tombol dan pesan ===== */
+    button.aksi {
+      margin-top: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: rgb(238, 237, 241);
+      background-color: #b9116d;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button.aksi:hover {
+      background-color: #201f4f;
+    }
+
+    #pesan {
+      display: none;
+      max-width: 520px;
+      margin: 16px auto 0;
+      padding: 14px 18px;
+      background-color: #ffffff;
+      border: 4px solid #b9116d;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #b9116d;
+    }
+
+    #pesan.tampil {
+      display: block;
+    }
+
+    /* ===== Pembungkus jadwal ===== */
+    .lebar {
+      max-width: 900px;
+      margin: 36px auto 20px;
+    }
+
+    .lebar h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+      text-align: center;
+    }
+
+    /* ===== Jadwal per hari (tanpa background) ===== */
+    .hari {
+      margin-bottom: 28px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      text-align: left;
+    }
+
+    .judul-hari {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 5px solid var(--warna);
+      padding: 4px 12px;
+      margin-bottom: 8px;
+      background: none;
+    }
+
+    .judul-hari .titik {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--warna);
+    }
+
+    .judul-hari h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      color: var(--warna);
+    }
+
+    .judul-hari .jumlah {
+      font-size: 0.8rem;
+      color: #6b7088;
+    }
+
+    .bungkus-tabel {
+      overflow-x: auto;
+      background: none;
+      border-top: 3px solid var(--warna);
+    }
+
+    table.jadwal {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      color: #1f2233;
+      background: none;
+    }
+
+    table.jadwal th {
+      background: none;
+      color: #6b7088;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      text-align: left;
+      padding: 14px 12px;
+      border: none;
+      border-bottom: 1px solid #c9bcc2;
+    }
+
+    table.jadwal td {
+      padding: 14px 12px;
+      border: none;
+      border-bottom: 1px solid #d8ccd2;
+      text-align: left;
+      vertical-align: middle;
+      background: none;
+    }
+
+    table.jadwal tr:last-child td {
+      border-bottom: none;
+    }
+
+    .matkul {
+      font-weight: 600;
+    }
+
+    .kode {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: normal;
+      color: #7d8196;
+      margin-top: 2px;
+    }
+
+    .jam {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      border: 1.5px solid var(--warna);
+      color: var(--warna);
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .kelas {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1.5px solid #139a86;
+      color: #139a86;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .ruang {
+      font-weight: 600;
+    }
+
+    .kosong {
+      color: #7d8196;
+      font-style: italic;
+    }
+
+    /* Kanvas kembang api: menutupi layar, tidak menghalangi klik */
+    #kembangApi {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Layar pembuka ===== -->
+  <div id="pembuka">
+    <button id="kotakBuka" type="button">
+      Buka Profil Ini
+      <small>Klik kotak ini</small>
+    </button>
+  </div>
+
+  <canvas id="kembangApi"></canvas>
+
+  <!-- ===== Isi profil (muncul setelah kotak diklik) ===== -->
+  <div id="profil">
+
+    <h1>Profil Saya</h1>
+
+    <img src="123.jpeg" alt="Foto Amar Khan">
+
+    <!-- Data diri -->
+    <div class="grid-profil">
+      <div class="kotak">
+        <span class="label">Nama</span>
+        <span class="isi">Amar Khan</span>
+      </div>
+      <div class="kotak">
+        <span class="label">Tempat, Tanggal Lahir</span>
+        <span class="isi">Bekasi, 05-05-2005</span>
+      </div>
+      <div class="kotak">
+        <span class="label">NIM</span>
+        <span class="isi">E200240014</span>
+      </div>
+      <div class="kotak">
+        <span class="label">Program Studi</span>
+        <span class="isi">Sains Informasi Geografi</span>
+      </div>
+      <div class="kotak">
+        <span class="label">Fakultas</span>
+        <span class="isi">Geografi</span>
+      </div>
+      <div class="kotak">
+        <span class="label">Universitas</span>
+        <span class="isi">Universitas Muhammadiyah Surakarta</span>
+      </div>
+    </div>
+    <div class="grid-profil">
+      <div class="kotak">
+        <span class="label">Mata Kuliah</span>
+        <span class="isi">Pemrograman Web-GIS</span>
+      </div> 
+    </div>
+
+    <!-- Tombol dan pesan -->
+    <button id="tombolPesan" class="aksi" type="button">Tampilkan Pesan</button>
+    <div id="pesan"></div>
+
+    <!-- Jadwal kuliah semester 5 -->
+    <div class="lebar">
+      <h2>Jadwal Kuliah Semester 5</h2>
+
+      <!-- ===== SENIN ===== -->
+      <section class="hari" style="--warna:#2e2f83;">
+        <div class="judul-hari">
+          <span class="titik"></span>
+          <h3>SENIN</h3>
+          <span class="jumlah">3 kelas</span>
+        </div>
+        <div class="bungkus-tabel">
+          <table class="jadwal">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>JAM KE</th>
+                <th>MATA KULIAH</th>
+                <th>KELAS</th>
+                <th>RUANG</th>
+                <th>DOSEN PENGAMPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><span class="jam">3–4</span></td>
+                <td><span class="matkul">Geografi Perkotaan</span><span class="kode">SIG2241261</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">I0314</td>
+                <td>M Iqbal Taufiqurrahman Sunariya, S.Si., M.Sc, M.URP</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><span class="jam">5–6</span></td>
+                <td><span class="matkul">Pengantar Perencanaan Wilayah</span><span class="kode">SIG2241237</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">RLPPM03</td>
+                <td>M Iqbal Taufiqurrahman Sunariya, S.Si., M.Sc, M.URP</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><span class="jam">7–8</span></td>
+                <td><span class="matkul">Pemrograman Spasial</span><span class="kode">SIG3241253</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">I0114</td>
+                <td>Prof. Jumadi, S.Si., M.Sc., Ph.D.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== SELASA ===== -->
+      <section class="hari" style="--warna:#14b8a6;">
+        <div class="judul-hari">
+          <span class="titik"></span>
+          <h3>SELASA</h3>
+          <span class="jumlah">1 kelas</span>
+        </div>
+        <div class="bungkus-tabel">
+          <table class="jadwal">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>JAM KE</th>
+                <th>MATA KULIAH</th>
+                <th>KELAS</th>
+                <th>RUANG</th>
+                <th>DOSEN PENGAMPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>4</td>
+                <td><span class="jam">1–2</span></td>
+                <td><span class="matkul">Metodologi Penelitian Sains Informasi Geografis</span><span class="kode">SIG3241252</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">RLPPM03</td>
+                <td>Basyar Ihsan Arijuddin, S.Si., M.Sc.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== RABU ===== -->
+      <section class="hari" style="--warna:#d97706;">
+        <div class="judul-hari">
+          <span class="titik"></span>
+          <h3>RABU</h3>
+          <span class="jumlah">4 kelas</span>
+        </div>
+        <div class="bungkus-tabel">
+          <table class="jadwal">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>JAM KE</th>
+                <th>MATA KULIAH</th>
+                <th>KELAS</th>
+                <th>RUANG</th>
+                <th>DOSEN PENGAMPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>5</td>
+                <td><span class="jam">1–2</span></td>
+                <td><span class="matkul">Praktikum Penginderaan Jauh Berbasis UAV</span><span class="kode">SIG2241151</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">LAB. PJ</td>
+                <td>Afif Ari Wibowo, S.Si., M.Sc.</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><span class="jam">3–4</span></td>
+                <td><span class="matkul">Analisis Pemodelan Spasial</span><span class="kode">SIG2241248</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">RLPPM03</td>
+                <td>Aditya Saputra, Dr., S.Si., M.Sc.</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><span class="jam">7–8</span></td>
+                <td><span class="matkul">Pemrograman WEB-GIS</span><span class="kode">SIG3241255</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">R.AL-KINDI</td>
+                <td>Prof. Jumadi, S.Si., M.Sc., Ph.D.</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td><span class="jam">9–10</span></td>
+                <td><span class="matkul">Praktikum Analisis dan Pemodelan Spasial</span><span class="kode">SIG2241149</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">LAB. SIG &amp; PCD</td>
+                <td>Danardono, S.Si., M.Sc.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== KAMIS ===== -->
+      <section class="hari" style="--warna:#7c3aed;">
+        <div class="judul-hari">
+          <span class="titik"></span>
+          <h3>KAMIS</h3>
+          <span class="jumlah">2 kelas</span>
+        </div>
+        <div class="bungkus-tabel">
+          <table class="jadwal">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>JAM KE</th>
+                <th>MATA KULIAH</th>
+                <th>KELAS</th>
+                <th>RUANG</th>
+                <th>DOSEN PENGAMPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>9</td>
+                <td><span class="jam">5–6</span></td>
+                <td><span class="matkul">Spatial Decision Support System</span><span class="kode">SIG3241257</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">I0314</td>
+                <td>Aditya Saputra, Dr., S.Si., M.Sc.</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td><span class="jam">5–6</span></td>
+                <td><span class="matkul">Internet of Things</span><span class="kode">SIG3241264</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">I0314</td>
+                <td>Dr. Doan Perdana, S.T., M.T.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== JUMAT ===== -->
+      <section class="hari" style="--warna:#e11d48;">
+        <div class="judul-hari">
+          <span class="titik"></span>
+          <h3>JUMAT</h3>
+          <span class="jumlah">1 kelas</span>
+        </div>
+        <div class="bungkus-tabel">
+          <table class="jadwal">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>JAM KE</th>
+                <th>MATA KULIAH</th>
+                <th>KELAS</th>
+                <th>RUANG</th>
+                <th>DOSEN PENGAMPU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>11</td>
+                <td><span class="jam">5–6</span></td>
+                <td><span class="matkul">Penginderaan Jauh Berbasis UAV</span><span class="kode">SIG2241250</span></td>
+                <td><span class="kelas">A</span></td>
+                <td class="ruang">RLPPM01</td>
+                <td>Afif Ari Wibowo, S.Si., M.Sc.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== Layar pembuka: klik kotak untuk membuka profil =====
+    const pembuka = document.getElementById("pembuka");
+    const kotakBuka = document.getElementById("kotakBuka");
+    const profil = document.getElementById("profil");
+    let profilTerbuka = false;
+
+    kotakBuka.addEventListener("click", function (e) {
+      e.stopPropagation();
+      pembuka.classList.add("hilang");
+      profil.classList.add("terbuka");
+      profilTerbuka = true;
+      luncurkan(kanvas.width / 2);
+    });
+
+    // ===== Tombol pesan: alert + teks tampil di halaman =====
+    const tombol = document.getElementById("tombolPesan");
+    const kotakPesan = document.getElementById("pesan");
+
+    tombol.addEventListener("click", function () {
+      const teks = "Halo! Selamat datang di halaman profil saya dan Melihat foto ganteng nya saya!!!.";
+      kotakPesan.textContent = teks;
+      kotakPesan.classList.add("tampil");
+      alert(teks);
+    });
+
+    // ===== Kembang api (versi kecil) =====
+    const kanvas = document.getElementById("kembangApi");
+    const ctx = kanvas.getContext("2d");
+    let partikel = [];
+    let roket = [];
+
+    function ukuranKanvas() {
+      kanvas.width = window.innerWidth;
+      kanvas.height = window.innerHeight;
+    }
+    ukuranKanvas();
+    window.addEventListener("resize", ukuranKanvas);
+
+    // Warna pekat supaya terlihat di latar terang
+    function warnaAcak() {
+      return "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 50%)";
+    }
+
+    // Roket kecil meluncur dari bawah
+    function luncurkan(xTarget) {
+      roket.push({
+        x: xTarget,
+        y: kanvas.height,
+        tujuanY: kanvas.height * (0.2 + Math.random() * 0.3),
+        warna: warnaAcak()
+      });
+    }
+
+    // Ledakan kecil
+    function ledakan(x, y, warna) {
+      const jumlah = 35;
+      for (let i = 0; i < jumlah; i++) {
+        const sudut = (Math.PI * 2 * i) / jumlah + Math.random() * 0.1;
+        const kecepatan = Math.random() * 2.5 + 1;
+        partikel.push({
+          x: x,
+          y: y,
+          vx: Math.cos(sudut) * kecepatan,
+          vy: Math.sin(sudut) * kecepatan,
+          hidup: 1,
+          ukuran: Math.random() * 1 + 1.2,
+          warna: warna
+        });
+      }
+    }
+
+    function animasi() {
+      // Pudarkan frame sebelumnya (jejak tipis)
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+      ctx.fillRect(0, 0, kanvas.width, kanvas.height);
+      ctx.globalCompositeOperation = "source-over";
+
+      // Roket
+      roket = roket.filter(function (r) {
+        r.y -= 8;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = r.warna;
+        ctx.fillStyle = r.warna;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (r.y <= r.tujuanY) {
+          ledakan(r.x, r.y, r.warna);
+          return false;
+        }
+        return true;
+      });
+
+      // Partikel ledakan
+      partikel = partikel.filter(function (p) { return p.hidup > 0; });
+
+      partikel.forEach(function (p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.04;
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+        p.hidup -= 0.015;
+
+        ctx.globalAlpha = Math.max(p.hidup, 0);
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = p.warna;
+        ctx.fillStyle = p.warna;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.ukuran, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      requestAnimationFrame(animasi);
+    }
+    animasi();
+
+    // Kembang api otomatis tiap 1,2 detik (hanya setelah profil dibuka)
+    setInterval(function () {
+      if (!profilTerbuka) return;
+      luncurkan(Math.random() * kanvas.width * 0.9 + kanvas.width * 0.05);
+    }, 1200);
+
+    // Klik di mana saja: ledakan kecil di titik klik
+    document.addEventListener("click", function (e) {
+      if (!profilTerbuka) return;
+      ledakan(e.clientX, e.clientY, warnaAcak());
+    });
+  </script>
+</body>
+</html>
