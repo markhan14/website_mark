@@ -158,12 +158,17 @@ const CFG = {
   dia: "",       // nama dia (atau pakai ?to=Nama di URL)
   aku: "Aku",    // nama kamu (atau pakai ?from=Nama di URL)
   pembuka: "Aku cuma mau ngomong klo Aku udah suka sama kamu dari sejak lama, cuma dari dulu masih belum berani ngungkapin, dulu juga aku cuma sekedar mengagumi kamu. Boleh nggak?",
+  penutup: "Makasih banyak yaa",
 
   penolakan: ["Yakin?", "Coba pikir lagi deh", "Sedih kalo ga pencet tombol iya", "Tombolnya capek lari-llarian terus", "Pilih yang satunya aja ya"],
 
-  // Pengiriman otomatis jawaban "Iya": "callmebot" (WhatsApp) atau "telegram"
-  kirimVia: "callmebot",
-  callmebot: { nomor: "6285713091638", apikey: "ISI_APIKEY_CALLMEBOT" },   // nomor WA kamu, format 62812xxxx
+  // Cara jawaban "Iya" dikirim ke kamu:
+  //   "whatsapp"  = langsung buka WhatsApp dengan pesan terisi (dia tinggal tekan kirim) -> tanpa API key
+  //   "callmebot" = terkirim otomatis ke WA kamu (wajib isi apikey)
+  //   "telegram"  = terkirim otomatis ke Telegram kamu (wajib isi token & chatId)
+  kirimVia: "whatsapp",
+  nomor: "6285713091638",                       // nomor WA kamu, format 62812xxxx (tanpa + dan tanpa 0 depan)
+  callmebot: { apikey: "ISI_APIKEY_CALLMEBOT" },
   telegram: { token: "ISI_TOKEN_BOT", chatId: "ISI_CHAT_ID" }
 };
 // ==============================
@@ -196,64 +201,4 @@ amplop.addEventListener("click", () => {
   }, 2000);
 });
 
-// --- Kirim jawaban "Iya" otomatis ke pengirim ---
-async function kirimJawaban() {
-  const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
-  const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
-  const t = encodeURIComponent(pesan);
-  const status = $("status");
-  try {
-    if (CFG.kirimVia === "telegram") {
-      const { token, chatId } = CFG.telegram;
-      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${t}`);
-      if (!r.ok) throw new Error("gagal");
-    } else {
-      const { nomor, apikey } = CFG.callmebot;
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent("+" + nomor)}&text=${t}&apikey=${apikey}`, { mode: "no-cors" });
-    }
-    status.textContent = `Jawabanmu sudah dikabari ke ${CFG.aku} 💗`;
-  } catch (err) {
-    status.textContent = `Jawabanmu belum terkirim, coba kabari ${CFG.aku} langsung ya.`;
-  }
-}
-
-// --- Tombol "Tidak" kabur ---
-function kabur(e) {
-  e.preventDefault();
-  const idx = Math.min(jumlahKabur, CFG.penolakan.length - 1);
-  tidak.textContent = CFG.penolakan[idx];
-  jumlahKabur++;
-  iya.style.transform = `scale(${Math.min(1 + jumlahKabur * 0.12, 1.8)})`;
-  tidak.style.position = "fixed";
-  const maxX = window.innerWidth - tidak.offsetWidth - 16;
-  const maxY = window.innerHeight - tidak.offsetHeight - 16;
-  tidak.style.left = Math.random() * maxX + 8 + "px";
-  tidak.style.top = Math.random() * maxY + 8 + "px";
-}
-tidak.addEventListener("mouseenter", kabur);
-tidak.addEventListener("touchstart", kabur, { passive: false });
-tidak.addEventListener("click", kabur);
-
-// --- Hujan hati ---
-function hati() {
-  const h = document.createElement("div");
-  h.className = "heart";
-  h.textContent = ["💖", "💗", "💕", "🌸"][Math.floor(Math.random() * 4)];
-  h.style.left = Math.random() * 100 + "vw";
-  h.style.fontSize = 1 + Math.random() * 1.6 + "rem";
-  h.style.animationDuration = 3 + Math.random() * 3 + "s";
-  document.body.appendChild(h);
-  setTimeout(() => h.remove(), 6500);
-}
-
-// --- Klik "Iya": tampilkan hasil + kirim jawaban otomatis ---
-iya.addEventListener("click", () => {
-  $("tanya").style.display = "none";
-  tidak.style.display = "none";
-  $("hasil").style.display = "block";
-  for (let i = 0; i < 40; i++) setTimeout(hati, i * 120);
-  kirimJawaban();
-});
-</script>
-</body>
-</html>
+// --- Kirim jawaban "Iya"
