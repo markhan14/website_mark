@@ -159,16 +159,11 @@ const CFG = {
   aku: "Aku",    // nama kamu (atau pakai ?from=Nama di URL)
   pembuka: "Aku cuma mau ngomong klo Aku udah suka sama kamu dari sejak lama, cuma dari dulu masih belum berani ngungkapin, dulu juga aku cuma sekedar mengagumi kamu. Boleh nggak?",
   penutup: "Makasih banyak yaa",
-
   penolakan: ["Yakin?", "Coba pikir lagi deh", "Sedih kalo ga pencet tombol iya", "Tombolnya capek lari-llarian terus", "Pilih yang satunya aja ya"],
 
-  // Cara jawaban "Iya" dikirim ke kamu:
-  //   "whatsapp"  = langsung buka WhatsApp dengan pesan terisi (dia tinggal tekan kirim) -> tanpa API key
-  //   "callmebot" = terkirim otomatis ke WA kamu (wajib isi apikey)
-  //   "telegram"  = terkirim otomatis ke Telegram kamu (wajib isi token & chatId)
-  kirimVia: "whatsapp",
-  nomor: "6285713091638",                       // nomor WA kamu, format 62812xxxx (tanpa + dan tanpa 0 depan)
-  callmebot: { apikey: "ISI_APIKEY_CALLMEBOT" },
+  // Pengiriman otomatis jawaban "Iya": "callmebot" (WhatsApp) atau "telegram"
+  kirimVia: "callmebot",
+  callmebot: { nomor: "6281234567890", apikey: "ISI_APIKEY_CALLMEBOT" },   // nomor WA kamu, format 62812xxxx
   telegram: { token: "ISI_TOKEN_BOT", chatId: "ISI_CHAT_ID" }
 };
 // ==============================
@@ -201,40 +196,20 @@ amplop.addEventListener("click", () => {
   }, 2000);
 });
 
-// --- Kirim jawaban "Iya" ke pengirim ---
+// --- Kirim jawaban "Iya" otomatis ke pengirim ---
 async function kirimJawaban() {
   const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
   const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
   const t = encodeURIComponent(pesan);
   const status = $("status");
-
-  // Mode WhatsApp: buka WA dengan pesan terisi (harus dipanggil langsung saat klik)
-  if (CFG.kirimVia === "whatsapp") {
-    const url = `https://wa.me/${CFG.nomor}?text=${t}`;
-    const w = window.open(url, "_blank");
-    if (w) {
-      status.textContent = "Tinggal tekan kirim di WhatsApp ya 💗";
-    } else {
-      // Kalau popup diblokir browser, sediakan link manual
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.textContent = "Ketuk di sini untuk membalas lewat WhatsApp";
-      a.style.color = "var(--accent)";
-      status.appendChild(a);
-    }
-    return;
-  }
-
-  // Mode otomatis (CallMeBot / Telegram)
   try {
     if (CFG.kirimVia === "telegram") {
       const { token, chatId } = CFG.telegram;
       const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${t}`);
       if (!r.ok) throw new Error("gagal");
     } else {
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent("+" + CFG.nomor)}&text=${t}&apikey=${CFG.callmebot.apikey}`, { mode: "no-cors" });
+      const { nomor, apikey } = CFG.callmebot;
+      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent("+" + nomor)}&text=${t}&apikey=${apikey}`, { mode: "no-cors" });
     }
     status.textContent = `Jawabanmu sudah dikabari ke ${CFG.aku} 💗`;
   } catch (err) {
@@ -271,7 +246,7 @@ function hati() {
   setTimeout(() => h.remove(), 6500);
 }
 
-// --- Klik "Iya": tampilkan hasil + kirim jawaban ---
+// --- Klik "Iya": tampilkan hasil + kirim jawaban otomatis ---
 iya.addEventListener("click", () => {
   $("tanya").style.display = "none";
   tidak.style.display = "none";
