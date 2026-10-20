@@ -201,4 +201,84 @@ amplop.addEventListener("click", () => {
   }, 2000);
 });
 
-// --- Kirim jawaban "Iya"
+// --- Kirim jawaban "Iya" ke pengirim ---
+async function kirimJawaban() {
+  const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
+  const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
+  const t = encodeURIComponent(pesan);
+  const status = $("status");
+
+  // Mode WhatsApp: buka WA dengan pesan terisi (harus dipanggil langsung saat klik)
+  if (CFG.kirimVia === "whatsapp") {
+    const url = `https://wa.me/${CFG.nomor}?text=${t}`;
+    const w = window.open(url, "_blank");
+    if (w) {
+      status.textContent = "Tinggal tekan kirim di WhatsApp ya 💗";
+    } else {
+      // Kalau popup diblokir browser, sediakan link manual
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = "Ketuk di sini untuk membalas lewat WhatsApp";
+      a.style.color = "var(--accent)";
+      status.appendChild(a);
+    }
+    return;
+  }
+
+  // Mode otomatis (CallMeBot / Telegram)
+  try {
+    if (CFG.kirimVia === "telegram") {
+      const { token, chatId } = CFG.telegram;
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${t}`);
+      if (!r.ok) throw new Error("gagal");
+    } else {
+      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent("+" + CFG.nomor)}&text=${t}&apikey=${CFG.callmebot.apikey}`, { mode: "no-cors" });
+    }
+    status.textContent = `Jawabanmu sudah dikabari ke ${CFG.aku} 💗`;
+  } catch (err) {
+    status.textContent = `Jawabanmu belum terkirim, coba kabari ${CFG.aku} langsung ya.`;
+  }
+}
+
+// --- Tombol "Tidak" kabur ---
+function kabur(e) {
+  e.preventDefault();
+  const idx = Math.min(jumlahKabur, CFG.penolakan.length - 1);
+  tidak.textContent = CFG.penolakan[idx];
+  jumlahKabur++;
+  iya.style.transform = `scale(${Math.min(1 + jumlahKabur * 0.12, 1.8)})`;
+  tidak.style.position = "fixed";
+  const maxX = window.innerWidth - tidak.offsetWidth - 16;
+  const maxY = window.innerHeight - tidak.offsetHeight - 16;
+  tidak.style.left = Math.random() * maxX + 8 + "px";
+  tidak.style.top = Math.random() * maxY + 8 + "px";
+}
+tidak.addEventListener("mouseenter", kabur);
+tidak.addEventListener("touchstart", kabur, { passive: false });
+tidak.addEventListener("click", kabur);
+
+// --- Hujan hati ---
+function hati() {
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.textContent = ["💖", "💗", "💕", "🌸"][Math.floor(Math.random() * 4)];
+  h.style.left = Math.random() * 100 + "vw";
+  h.style.fontSize = 1 + Math.random() * 1.6 + "rem";
+  h.style.animationDuration = 3 + Math.random() * 3 + "s";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 6500);
+}
+
+// --- Klik "Iya": tampilkan hasil + kirim jawaban ---
+iya.addEventListener("click", () => {
+  $("tanya").style.display = "none";
+  tidak.style.display = "none";
+  $("hasil").style.display = "block";
+  for (let i = 0; i < 40; i++) setTimeout(hati, i * 120);
+  kirimJawaban();
+});
+</script>
+</body>
+</html>
