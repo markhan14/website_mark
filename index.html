@@ -158,7 +158,7 @@ const CFG = {
   dia: "",       // nama dia (atau pakai ?to=Nama di URL)
   aku: "Aku",    // nama kamu (atau pakai ?from=Nama di URL)
   pembuka: "Aku cuma mau ngomong klo Aku udah suka sama kamu dari sejak lama, cuma dari dulu masih belum berani ngungkapin, dulu juga aku cuma sekedar mengagumi kamu. Boleh nggak?",
-
+  penutup: "Makasih banyak yaa",
   penolakan: ["Yakin?", "Coba pikir lagi deh", "Sedih kalo ga pencet tombol iya", "Tombolnya capek lari-llarian terus", "Pilih yang satunya aja ya"],
 
   // Pengiriman otomatis jawaban "Iya": "callmebot" (WhatsApp) atau "telegram"
@@ -179,7 +179,7 @@ let jumlahKabur = 0;
 
 $("judul").textContent = `Hallo ${CFG.dia}, Ada yang mau aku bilang.`;
 $("pembuka").textContent = CFG.pembuka;
-$("penutup").textContent = CFG.penutup;
+
 
 // --- Buka amplop ---
 const amplop = $("amplop");
