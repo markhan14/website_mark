@@ -197,7 +197,7 @@ amplop.addEventListener("click", () => {
 // --- Buat link jawaban "Iya" ke pengirim ---
 function linkBalasan() {
   const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
-  const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
+  const pesan = `Hai ${CFG.aku}, Aku sudah baca suratmu, dan jawabanku: IYA `;
   const t = encodeURIComponent(pesan);
   if (CFG.kirimVia === "telegram") return `https://t.me/${CFG.tujuan}?text=${t}`;
   if (CFG.kirimVia === "email") {
