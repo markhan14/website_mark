@@ -103,6 +103,7 @@ main.muncul { display: block; animation: muncul .6s ease-out; }
 h1 { font-size: clamp(1.7rem, 6vw, 2.2rem); line-height: 1.15; margin: .2em 0 .5em; font-weight: 800; }
 main p { color: var(--soft); line-height: 1.6; max-width: 36ch; margin: 0 auto 1.5rem; }
 main #penutup { margin-bottom: .5rem; }
+main #status { font-size: .9rem; margin-bottom: 0; }
 .big { font-size: 3.2rem; line-height: 1; }
 .row { display: flex; gap: 1rem; justify-content: center; align-items: center; min-height: 3.5rem; }
 
@@ -145,9 +146,9 @@ button.pil:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
     </div>
   </section>
   <section id="hasil">
-    <div class="big" aria-hidden="true">🥹</div>
     <h1>Yeay, makasih banyak ya!</h1>
     <p id="penutup"></p>
+    <p id="status"></p>
   </section>
 </main>
 
@@ -158,11 +159,12 @@ const CFG = {
   aku: "Aku",    // nama kamu (atau pakai ?from=Nama di URL)
   pembuka: "Aku cuma mau ngomong klo Aku udah suka sama kamu dari sejak lama, cuma dari dulu masih belum berani ngungkapin, dulu juga aku cuma sekedar mengagumi kamu. Boleh nggak?",
   penutup: "Makasih banyak yaa",
-  // Jawaban "Iya" dikirim ke kamu lewat: "whatsapp" | "telegram" | "email"
-  kirimVia: "whatsapp",
-  // WhatsApp: nomor 62812xxxx (tanpa + dan tanpa 0 depan) | Telegram: username tanpa @ | Email: alamat email
-  tujuan: "6281234567890",
-  penolakan: ["Yakin?", "Coba pikir lagi deh", "Sedih kalo ga pencet tombol iya", "Tombolnya capek lari-llarian terus", "Pilih yang satunya aja ya"]
+  penolakan: ["Yakin?", "Coba pikir lagi deh", "Sedih kalo ga pencet tombol iya", "Tombolnya capek lari-llarian terus", "Pilih yang satunya aja ya"],
+
+  // Pengiriman otomatis jawaban "Iya": "callmebot" (WhatsApp) atau "telegram"
+  kirimVia: "callmebot",
+  callmebot: { nomor: "6281234567890", apikey: "ISI_APIKEY_CALLMEBOT" },   // nomor WA kamu, format 62812xxxx
+  telegram: { token: "ISI_TOKEN_BOT", chatId: "ISI_CHAT_ID" }
 };
 // ==============================
 
@@ -194,16 +196,25 @@ amplop.addEventListener("click", () => {
   }, 2000);
 });
 
-// --- Buat link jawaban "Iya" ke pengirim ---
-function linkBalasan() {
+// --- Kirim jawaban "Iya" otomatis ke pengirim ---
+async function kirimJawaban() {
   const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
   const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
   const t = encodeURIComponent(pesan);
-  if (CFG.kirimVia === "telegram") return `https://t.me/${CFG.tujuan}?text=${t}`;
-  if (CFG.kirimVia === "email") {
-    return `mailto:${CFG.tujuan}?subject=${encodeURIComponent("Jawaban untuk suratmu")}&body=${t}`;
+  const status = $("status");
+  try {
+    if (CFG.kirimVia === "telegram") {
+      const { token, chatId } = CFG.telegram;
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${t}`);
+      if (!r.ok) throw new Error("gagal");
+    } else {
+      const { nomor, apikey } = CFG.callmebot;
+      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent("+" + nomor)}&text=${t}&apikey=${apikey}`, { mode: "no-cors" });
+    }
+    status.textContent = `Jawabanmu sudah dikabari ke ${CFG.aku} 💗`;
+  } catch (err) {
+    status.textContent = `Jawabanmu belum terkirim, coba kabari ${CFG.aku} langsung ya.`;
   }
-  return `https://wa.me/${CFG.tujuan}?text=${t}`;
 }
 
 // --- Tombol "Tidak" kabur ---
@@ -235,14 +246,13 @@ function hati() {
   setTimeout(() => h.remove(), 6500);
 }
 
-// --- Klik "Iya": tampilkan hasil + otomatis buka WhatsApp ---
+// --- Klik "Iya": tampilkan hasil + kirim jawaban otomatis ---
 iya.addEventListener("click", () => {
   $("tanya").style.display = "none";
   tidak.style.display = "none";
   $("hasil").style.display = "block";
   for (let i = 0; i < 40; i++) setTimeout(hati, i * 120);
-
-  window.open(linkBalasan(), "_blank");
+  kirimJawaban();
 });
 </script>
 </body>
