@@ -195,7 +195,7 @@ amplop.addEventListener("click", () => {
   }, 2000);
 });
 
-// --- Kirim jawaban "Iya" ke pengirim ---
+// --- Siapkan link jawaban "Iya" ke pengirim ---
 function siapkanBalasan() {
   const nama = CFG.dia ? `ini ${CFG.dia}. ` : "";
   const pesan = `Hai ${CFG.aku}, ${nama}Aku sudah baca suratmu, dan jawabanku: IYA 💗`;
@@ -242,11 +242,16 @@ function hati() {
   document.body.appendChild(h);
   setTimeout(() => h.remove(), 6500);
 }
+
+// --- Klik "Iya": tampilkan hasil + otomatis buka WhatsApp ---
 iya.addEventListener("click", () => {
   $("tanya").style.display = "none";
   tidak.style.display = "none";
   $("hasil").style.display = "block";
   for (let i = 0; i < 40; i++) setTimeout(hati, i * 120);
+
+  // Buka WhatsApp dengan pesan jawaban yang sudah terisi
+  window.open($("balas").href, "_blank");
 });
 </script>
 </body>
